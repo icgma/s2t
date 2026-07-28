@@ -35,21 +35,24 @@
   <div class="layout">
     <nav class="sidebar" aria-label="转换方向">
       <div class="nav-group">
-        <div class="nav-group-title">发稿方向</div>
-        <button class="nav-item active" data-preset="cn2twp">简 → 繁（台湾）</button>
-        <button class="nav-item" data-preset="cn2hk">简 → 繁（香港）</button>
-        <button class="nav-item" data-preset="cn2tw">简 → 繁（通用字）</button>
-        <button class="nav-item" data-preset="twp2cn">繁（台湾）→ 简</button>
+        <div class="nav-group-title">转为简体</div>
+        <button class="nav-item active" data-preset="twp2cn">繁（台湾）→ 简</button>
         <button class="nav-item" data-preset="hk2cn">繁（香港）→ 简</button>
+        <button class="nav-item" data-preset="tw2cn">繁 → 简（仅字形）</button>
+        <button class="nav-item" data-preset="jp2cn">日本新字体 → 简</button>
       </div>
       <div class="nav-group">
-        <div class="nav-group-title">其他</div>
+        <div class="nav-group-title">转为繁体</div>
+        <button class="nav-item" data-preset="cn2twp">简 → 繁（台湾）</button>
+        <button class="nav-item" data-preset="cn2hk">简 → 繁（香港）</button>
+        <button class="nav-item" data-preset="cn2tw">简 → 繁（通用字）</button>
         <button class="nav-item" data-preset="tw2hk">繁（台）→ 繁（港）</button>
         <button class="nav-item" data-preset="hk2tw">繁（港）→ 繁（台）</button>
-        <button class="nav-item" data-preset="jp2cn">日本新字体 → 简</button>
       </div>
       <div class="side-note">
         <strong>台湾</strong>与<strong>香港</strong>不只是字形差异，还包含用词习惯（软件/軟體、网络/網路）。选“通用字”只换字形，不换词。
+        <br /><br />
+        转为繁体需要更大的词库，首次点击时会额外加载一次，之后即时转换。
       </div>
     </nav>
 
@@ -122,7 +125,8 @@
     </div>
   </footer>
 </div>
-<script src="vendor/opencc-full.min.js"></script>
+<!-- 繁→简只需 68KB，先载这个；简→繁的词组表 1MB，按需再拉 -->
+<script src="vendor/opencc-t2cn.min.js"></script>
 <script src="app.js"></script>
 </body>
 </html>

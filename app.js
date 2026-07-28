@@ -22,7 +22,7 @@
   const QUOTES_TO_CORNER = [["“", "「"], ["”", "」"], ["‘", "『"], ["’", "』"]];
   const QUOTES_TO_CURLY = [["「", "“"], ["」", "”"], ["『", "‘"], ["』", "’"]];
 
-  const state = { preset: "cn2twp", highlight: true, quotes: false };
+  const state = { preset: "twp2cn", highlight: true, quotes: false };
 
   const $ = (s) => document.querySelector(s);
   const els = {
@@ -62,6 +62,32 @@
   }
   applyTheme(localStorage.getItem(THEME_KEY) || "auto");
   els.themeToggle.addEventListener("click", cycleTheme);
+
+  // ---------- 字典按需加载 ----------
+  // 繁→简的字典只有 36KB（gzip），简→繁要 458KB——差 13 倍。
+  // 首屏只载小的，用户真的要转繁体时再拉大表。
+  const FULL_DICT = "vendor/opencc-full.min.js";
+  let fullLoaded = false;
+  let fullLoading = null;
+
+  // 这些方向必须有完整字典：目标是繁体，或繁↔繁互转
+  function needsFullDict(p) {
+    return p.to !== "cn";
+  }
+
+  function loadFullDict() {
+    if (fullLoaded) return Promise.resolve();
+    if (fullLoading) return fullLoading;
+
+    fullLoading = new Promise((resolve, reject) => {
+      const s = document.createElement("script");
+      s.src = FULL_DICT;
+      s.onload = () => { fullLoaded = true; cache.clear(); resolve(); };
+      s.onerror = () => { fullLoading = null; reject(new Error("字典加载失败，请检查网络后重试")); };
+      document.head.appendChild(s);
+    });
+    return fullLoading;
+  }
 
   // ---------- 转换器缓存 ----------
   const cache = new Map();
@@ -119,7 +145,8 @@
 
   // ---------- 主流程 ----------
   let ready = false;
-  function run() {
+  let runToken = 0;
+  async function run() {
     const text = els.input.value;
     els.inputCount.textContent = count(text);
 
@@ -131,6 +158,24 @@
       setStatus("ready", "就绪");
       els.hint.textContent = "";
       return;
+    }
+
+    const token = ++runToken;
+
+    // 需要大字典但还没加载：先取字典，期间界面给出明确反馈
+    if (needsFullDict(PRESETS[state.preset]) && !fullLoaded) {
+      setStatus("busy", "载入字典…");
+      els.hint.textContent = "首次转成繁体需要下载完整词库（约 460KB），之后不再重复下载";
+      try {
+        await loadFullDict();
+      } catch (e) {
+        if (token !== runToken) return;
+        setStatus("error", "字典加载失败");
+        els.hint.textContent = e.message;
+        return;
+      }
+      if (token !== runToken) return;
+      els.hint.textContent = "";
     }
 
     try {
@@ -237,6 +282,6 @@
     return;
   }
   ready = true;
-  selectPreset("cn2twp");
+  selectPreset("twp2cn");
   setStatus("ready", "就绪");
 })();
